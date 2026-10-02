@@ -1,896 +1,3 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
-<title>Wave — Karangué Pay</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{
-  --wave:#1a73e8;--wave-dark:#1557b0;--wave-light:#e8f0fe;
-  --bg:#f8f9ff;--card:#ffffff;--text:#1a1a2e;--muted:#6b7280;
-  --border:#e5e7eb;--green:#10b981;--red:#ef4444;--gold:#f59e0b;
-}
-html,body{height:100%;width:100%}
-body{font-family:-apple-system,'SF Pro Display','Segoe UI',sans-serif;
-  background:var(--bg);color:var(--text);min-height:100vh;
-  display:flex;justify-content:center}
-body>*{width:100%;max-width:480px}
-@media(min-width:520px){
-  body{background:#dde8ff}
-  body>*{box-shadow:0 0 0 1px rgba(26,115,232,.1),0 24px 80px rgba(0,0,0,.15)}
-}
-svg{display:inline-block;vertical-align:middle;flex-shrink:0}
-
-/* ── APP ─────────────────────────────── */
-#app{display:none;background:var(--bg);min-height:100vh}
-#app.show{display:block}
-
-/* ── PAGES ───────────────────────────── */
-.page{display:none;min-height:100vh;padding-bottom:80px}
-.page.active{display:block}
-
-/* ── TOPBAR ──────────────────────────── */
-.topbar{
-  background:var(--wave);
-  padding:48px 20px 20px;
-  position:relative;overflow:hidden;
-}
-.topbar::after{
-  content:'';position:absolute;
-  right:-40px;top:-40px;width:180px;height:180px;
-  border-radius:50%;background:rgba(255,255,255,.08);
-}
-.topbar::before{
-  content:'';position:absolute;
-  right:40px;bottom:-60px;width:120px;height:120px;
-  border-radius:50%;background:rgba(255,255,255,.05);
-}
-.tb-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;position:relative;z-index:1}
-.tb-logo{display:flex;align-items:center;gap:10px}
-.tb-logo-ico{
-  width:36px;height:36px;border-radius:10px;
-  background:white;display:flex;align-items:center;justify-content:center;
-}
-.tb-logo-txt{font-size:20px;font-weight:800;color:white;letter-spacing:-.5px}
-.tb-notif{
-  width:36px;height:36px;border-radius:50%;
-  background:rgba(255,255,255,.15);
-  display:flex;align-items:center;justify-content:center;cursor:pointer;
-}
-.tb-user{position:relative;z-index:1}
-.tb-greeting{font-size:13px;color:rgba(255,255,255,.7);margin-bottom:3px}
-.tb-name{font-size:22px;font-weight:800;color:white}
-.tb-phone{font-size:13px;color:rgba(255,255,255,.6);margin-top:2px}
-
-/* Balance card */
-.bal-card{
-  margin:0 16px;
-  margin-top:-20px;
-  background:white;border-radius:20px;
-  padding:20px;
-  box-shadow:0 4px 24px rgba(26,115,232,.12);
-  position:relative;z-index:2;
-}
-.bal-label{font-size:12px;color:var(--muted);margin-bottom:6px}
-.bal-row{display:flex;align-items:baseline;gap:6px;margin-bottom:16px}
-.bal-amt{font-size:36px;font-weight:800;color:var(--text);letter-spacing:-1px}
-.bal-cur{font-size:14px;color:var(--muted);font-weight:600}
-.bal-btns{display:flex;gap:10px}
-.bal-btn{
-  flex:1;padding:12px;border:none;border-radius:12px;
-  font-size:14px;font-weight:700;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;gap:6px;
-  transition:all .15s;
-}
-.bal-btn:active{transform:scale(.96);opacity:.85}
-.btn-send{background:var(--wave);color:white}
-.btn-recv{background:var(--wave-light);color:var(--wave)}
-
-/* Quick actions */
-.qa{padding:20px 16px 0}
-.qa-title{font-size:15px;font-weight:700;margin-bottom:14px}
-.qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.qa-item{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer}
-.qa-ico{
-  width:56px;height:56px;border-radius:16px;
-  background:var(--wave-light);
-  display:flex;align-items:center;justify-content:center;
-  transition:transform .15s;
-}
-.qa-item:active .qa-ico{transform:scale(.9)}
-.qa-lbl{font-size:11px;color:var(--muted);text-align:center;font-weight:500}
-
-/* Anti-phishing banner */
-.phish-banner{
-  margin:16px;background:linear-gradient(135deg,#fff7ed,#fef3c7);
-  border:1px solid #fcd34d;border-radius:14px;
-  padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;
-}
-.phish-ico{
-  width:40px;height:40px;border-radius:10px;
-  background:#fef9c3;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-}
-.phish-title{font-size:13px;font-weight:700;color:#92400e}
-.phish-sub{font-size:11px;color:#b45309;margin-top:2px}
-
-/* Transactions */
-.tx-sec{padding:0 16px}
-.tx-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.tx-title{font-size:15px;font-weight:700}
-.tx-link{font-size:13px;color:var(--wave);cursor:pointer;font-weight:600}
-.tx-item{
-  display:flex;align-items:center;gap:12px;
-  padding:13px 0;border-bottom:1px solid var(--border);
-}
-.tx-item:last-child{border-bottom:none}
-.tx-ico{
-  width:44px;height:44px;border-radius:14px;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-}
-.ico-g{background:rgba(16,185,129,.1)}
-.ico-r{background:rgba(239,68,68,.1)}
-.ico-o{background:rgba(245,158,11,.1)}
-.tx-info{flex:1}
-.tx-name{font-size:14px;font-weight:600}
-.tx-date{font-size:12px;color:var(--muted);margin-top:2px}
-.tx-amt{font-size:14px;font-weight:700;text-align:right}
-.tx-amt.pos{color:var(--green)}.tx-amt.neg{color:var(--red)}
-.tx-time{font-size:11px;color:var(--muted);margin-top:2px;text-align:right}
-
-/* Bottom nav */
-.bnav{
-  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
-  width:100%;max-width:480px;background:white;
-  border-top:1px solid var(--border);
-  display:flex;padding:10px 0 max(20px,env(safe-area-inset-bottom,20px));
-  z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,.06);
-}
-.n-item{
-  flex:1;display:flex;flex-direction:column;align-items:center;
-  gap:4px;cursor:pointer;padding:4px 0;
-}
-.n-ico{color:var(--muted);transition:color .2s}
-.n-lbl{font-size:10px;color:var(--muted);font-weight:500}
-.n-item.on .n-ico{color:var(--wave)}
-.n-item.on .n-lbl{color:var(--wave);font-weight:700}
-
-/* ── TRANSFER PAGE ───────────────────── */
-.page-head{
-  background:var(--wave);padding:48px 20px 20px;
-  display:flex;align-items:center;gap:14px;
-}
-.back-btn{
-  width:36px;height:36px;border-radius:10px;
-  background:rgba(255,255,255,.15);
-  display:flex;align-items:center;justify-content:center;cursor:pointer;
-  flex-shrink:0;
-}
-.page-title{font-size:18px;font-weight:800;color:white}
-
-/* Steps */
-.steps{
-  display:flex;align-items:center;justify-content:center;
-  padding:20px;gap:0;
-}
-.step{display:flex;flex-direction:column;align-items:center;gap:6px}
-.step-num{
-  width:32px;height:32px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:700;
-}
-.step.done .step-num{background:var(--wave);color:white}
-.step.active .step-num{background:var(--wave);color:white;
-  box-shadow:0 0 0 4px var(--wave-light)}
-.step.todo .step-num{background:var(--border);color:var(--muted)}
-.step-lbl{font-size:10px;color:var(--muted);font-weight:500}
-.step.active .step-lbl{color:var(--wave);font-weight:700}
-.step-line{width:48px;height:2px;background:var(--border);margin-bottom:18px}
-.step-line.done{background:var(--wave)}
-
-/* Form */
-.form-body{padding:0 16px}
-.fg{margin-bottom:16px}
-.fg label{
-  display:block;font-size:12px;font-weight:600;
-  color:var(--muted);text-transform:uppercase;
-  letter-spacing:.04em;margin-bottom:8px;
-}
-.inp{
-  width:100%;padding:14px 16px;
-  background:white;border:1.5px solid var(--border);
-  border-radius:12px;font-size:15px;color:var(--text);outline:none;
-  transition:border-color .2s;
-}
-.inp:focus{border-color:var(--wave)}
-.inp::placeholder{color:var(--muted)}
-.inp-row{
-  display:flex;align-items:center;gap:10px;
-  background:white;border:1.5px solid var(--border);
-  border-radius:12px;padding:0 16px;transition:border-color .2s;
-}
-.inp-row:focus-within{border-color:var(--wave)}
-.inp-pfx{font-size:14px;font-weight:700;color:var(--muted);flex-shrink:0}
-.inp-row input{
-  flex:1;padding:14px 0;background:transparent;
-  border:none;font-size:15px;color:var(--text);outline:none;
-}
-.inp-row input::placeholder{color:var(--muted)}
-
-/* Amount shortcuts */
-.amts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-.amt-chip{
-  padding:7px 14px;background:var(--wave-light);
-  border:1px solid transparent;border-radius:8px;
-  font-size:12px;font-weight:700;color:var(--wave);cursor:pointer;
-}
-.amt-chip:active{background:var(--wave);color:white}
-
-/* Info box */
-.info-box{
-  background:var(--wave-light);border-radius:12px;
-  padding:14px 16px;margin-bottom:16px;
-}
-.info-row{
-  display:flex;justify-content:space-between;
-  font-size:13px;padding:4px 0;
-}
-.info-lbl{color:var(--muted)}
-.info-val{font-weight:700;color:var(--text)}
-.info-val.blue{color:var(--wave)}
-.info-divider{height:1px;background:rgba(26,115,232,.1);margin:8px 0}
-
-/* Bénéficiaire card */
-.ben-card{
-  background:white;border:1.5px solid var(--border);
-  border-radius:12px;padding:14px 16px;margin-bottom:16px;
-  display:flex;align-items:center;gap:12px;
-}
-.ben-av{
-  width:44px;height:44px;border-radius:50%;
-  background:var(--wave);
-  display:flex;align-items:center;justify-content:center;
-  font-size:16px;font-weight:800;color:white;flex-shrink:0;
-}
-.ben-name{font-size:14px;font-weight:700}
-.ben-phone{font-size:12px;color:var(--muted);margin-top:2px}
-.ben-edit{margin-left:auto;color:var(--wave);cursor:pointer}
-
-/* PIN pad */
-.pin-display{
-  display:flex;gap:16px;justify-content:center;
-  margin:24px 0 32px;
-}
-.pin-dot{
-  width:16px;height:16px;border-radius:50%;
-  background:var(--border);transition:background .2s;
-}
-.pin-dot.filled{background:var(--wave)}
-.pin-pad{
-  display:grid;grid-template-columns:repeat(3,1fr);
-  gap:12px;max-width:280px;margin:0 auto;
-}
-.pin-key{
-  height:64px;border-radius:16px;
-  background:white;border:1.5px solid var(--border);
-  display:flex;align-items:center;justify-content:center;
-  font-size:22px;font-weight:700;cursor:pointer;
-  transition:all .1s;
-}
-.pin-key:active{background:var(--wave);color:white;border-color:var(--wave)}
-.pin-key.del{background:var(--bg)}
-.pin-key.confirm{background:var(--wave);color:white;border-color:var(--wave)}
-
-/* Success page */
-.success-body{
-  display:flex;flex-direction:column;align-items:center;
-  padding:60px 24px 40px;text-align:center;
-}
-.success-ico{
-  width:80px;height:80px;border-radius:50%;
-  background:linear-gradient(135deg,#10b981,#059669);
-  display:flex;align-items:center;justify-content:center;
-  margin-bottom:20px;
-  box-shadow:0 8px 32px rgba(16,185,129,.3);
-}
-.success-title{font-size:24px;font-weight:800;margin-bottom:8px}
-.success-sub{font-size:14px;color:var(--muted);margin-bottom:32px}
-.success-ref{
-  background:var(--wave-light);border-radius:12px;
-  padding:14px 20px;margin-bottom:32px;width:100%;
-}
-.success-ref-lbl{font-size:12px;color:var(--muted);margin-bottom:4px}
-.success-ref-val{font-size:16px;font-weight:800;color:var(--wave);font-family:monospace}
-.success-details{width:100%;margin-bottom:32px}
-.sd-row{
-  display:flex;justify-content:space-between;
-  padding:10px 0;border-bottom:1px solid var(--border);
-  font-size:13px;
-}
-.sd-row:last-child{border-bottom:none}
-.sd-lbl{color:var(--muted)}
-.sd-val{font-weight:700}
-
-/* Phishing page */
-.ph-form{padding:20px 16px}
-.ph-result{
-  border-radius:12px;padding:16px;margin-top:16px;
-}
-.ph-safe{background:#ecfdf5;border:1px solid #6ee7b7}
-.ph-danger{background:#fef2f2;border:1px solid #fca5a5}
-.ph-title{font-size:15px;font-weight:700;margin-bottom:8px}
-.ph-safe .ph-title{color:#065f46}
-.ph-danger .ph-title{color:#991b1b}
-.ph-signal{font-size:12px;margin-bottom:4px;padding-left:16px;position:relative}
-.ph-signal::before{content:'•';position:absolute;left:4px}
-.ph-safe .ph-signal{color:#065f46}
-.ph-danger .ph-signal{color:#991b1b}
-
-/* Buttons */
-.btn{
-  width:100%;padding:16px;border:none;border-radius:14px;
-  font-size:16px;font-weight:700;cursor:pointer;
-  transition:all .15s;
-}
-.btn:active{opacity:.85;transform:scale(.98)}
-.btn-primary{background:var(--wave);color:white}
-.btn-outline{
-  background:transparent;color:var(--wave);
-  border:1.5px solid var(--wave);
-}
-.btn-ghost{background:var(--bg);color:var(--text)}
-.btn-danger{background:#ef4444;color:white}
-
-/* Login */
-.login-wrap{
-  min-height:100vh;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  padding:40px 24px;background:var(--bg);
-}
-.login-logo{
-  width:72px;height:72px;border-radius:20px;
-  background:var(--wave);
-  display:flex;align-items:center;justify-content:center;
-  margin-bottom:20px;box-shadow:0 8px 32px rgba(26,115,232,.3);
-}
-.login-title{font-size:26px;font-weight:800;margin-bottom:6px}
-.login-sub{font-size:14px;color:var(--muted);margin-bottom:36px;text-align:center}
-.login-form{width:100%}
-.login-fg{margin-bottom:16px}
-.login-fg label{
-  display:block;font-size:13px;font-weight:600;
-  margin-bottom:8px;color:var(--text);
-}
-
-/* Toast */
-.toast{
-  position:fixed;top:60px;left:50%;transform:translateX(-50%);
-  background:var(--text);color:white;border-radius:12px;
-  padding:12px 20px;font-size:13px;font-weight:600;
-  z-index:999;display:none;white-space:nowrap;
-  box-shadow:0 8px 24px rgba(0,0,0,.2);
-}
-.toast.show{display:block;animation:tin .3s ease}
-@keyframes tin{from{transform:translateX(-50%) translateY(-8px);opacity:0}
-  to{transform:translateX(-50%) translateY(0);opacity:1}}
-
-/* Overlay */
-.overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.5);
-  z-index:200;display:none;align-items:flex-end;justify-content:center;
-}
-.overlay.open{display:flex}
-.sheet{
-  background:white;border-radius:24px 24px 0 0;
-  width:100%;max-width:480px;
-  padding:20px 20px max(40px,env(safe-area-inset-bottom,40px));
-  max-height:90vh;overflow-y:auto;
-}
-.sh-handle{
-  width:40px;height:4px;background:var(--border);
-  border-radius:2px;margin:0 auto 20px;
-}
-.sh-title{font-size:18px;font-weight:800;margin-bottom:16px}
-
-/* Blocked banner */
-.blocked-banner{
-  background:#fef2f2;border:1px solid #fca5a5;
-  border-radius:12px;padding:14px 16px;margin:16px;
-  display:flex;align-items:flex-start;gap:10px;
-}
-.blocked-title{font-size:13px;font-weight:700;color:#991b1b}
-.blocked-sub{font-size:12px;color:#b91c1c;margin-top:3px}
-</style>
-</head>
-<body>
-<div class="toast" id="toast"></div>
-
-<!-- ═══ LOGIN ═══ -->
-<div id="loginPage">
-  <div class="login-wrap">
-    <div class="login-logo">
-      <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-        <path d="M6 26 Q12 10 18 16 Q24 22 30 6" stroke="white" stroke-width="4"
-          fill="none" stroke-linecap="round"/>
-      </svg>
-    </div>
-    <h1 class="login-title">Wave</h1>
-    <p class="login-sub">Connectez-vous à votre compte Wave<br/>via Karangué Pay</p>
-    <div class="login-form">
-      <div class="login-fg">
-        <label>Numéro de téléphone</label>
-        <div class="inp-row">
-          
-          <input id="lPhone" type="tel" placeholder="+221 76 987 65 43"/>
-        </div>
-      </div>
-      <div class="login-fg">
-        <label>Code PIN</label>
-        <input class="inp" id="lPin" type="password" placeholder="••••••" maxlength="6"/>
-      </div>
-      <button class="btn btn-primary" style="margin-top:8px" onclick="doLogin()">
-        Se connecter
-      </button>
-      <p style="text-align:center;margin-top:16px;font-size:13px;color:var(--muted)">
-        Propulsé par <strong style="color:var(--wave)">Karangué Pay</strong>
-      </p>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ APP ═══ -->
-<div id="app">
-
-  <!-- ACCUEIL -->
-  <div id="pg-home" class="page active">
-    <div class="topbar">
-      <div class="tb-head">
-        <div class="tb-logo">
-          <div class="tb-logo-ico">
-            <svg width="20" height="20" viewBox="0 0 36 36" fill="none">
-              <path d="M6 26 Q12 10 18 16 Q24 22 30 6" stroke="#1a73e8" stroke-width="4"
-                fill="none" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <span class="tb-logo-txt">Wave</span>
-        </div>
-        <div class="tb-notif" onclick="showToast('Aucune notification')">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-            stroke="white" stroke-width="2" stroke-linecap="round">
-            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 01-3.46 0"/>
-          </svg>
-        </div>
-      </div>
-      <div class="tb-user">
-        <div class="tb-greeting">Bienvenue sur Wave</div>
-        <div class="tb-name" id="hName">Fatou Gueye</div>
-        <div class="tb-phone" id="hPhone">+221 76 987 65 43</div>
-      </div>
-    </div>
-
-    <!-- Balance -->
-    <div class="bal-card">
-      <div class="bal-label">Solde Wave disponible</div>
-      <div class="bal-row">
-        <span class="bal-amt" id="bAmt">0</span>
-        <span class="bal-cur">FCFA</span>
-      </div>
-      <div class="bal-btns">
-        <button class="bal-btn btn-send" onclick="goPage('pg-transfer')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="white" stroke-width="2.5" stroke-linecap="round">
-            <line x1="7" y1="17" x2="17" y2="7"/>
-            <polyline points="7 7 17 7 17 17"/>
-          </svg>
-          Envoyer
-        </button>
-        <button class="bal-btn btn-recv" onclick="showToast('Recharge en cours...')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="#1a73e8" stroke-width="2.5" stroke-linecap="round">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <polyline points="19 12 12 19 5 12"/>
-          </svg>
-          Recevoir
-        </button>
-      </div>
-    </div>
-
-    <!-- Quick actions -->
-    <div class="qa">
-      <div class="qa-title">Actions rapides</div>
-      <div class="qa-grid">
-        <div class="qa-item" onclick="goPage('pg-transfer')">
-          <div class="qa-ico">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-              stroke="#1a73e8" stroke-width="2.5" stroke-linecap="round">
-              <line x1="7" y1="17" x2="17" y2="7"/>
-              <polyline points="7 7 17 7 17 17"/>
-            </svg>
-          </div>
-          <div class="qa-lbl">Envoyer</div>
-        </div>
-        <div class="qa-item" onclick="showToast('Retrait initié')">
-          <div class="qa-ico">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-              stroke="#1a73e8" stroke-width="2.5" stroke-linecap="round">
-              <rect x="2" y="5" width="20" height="14" rx="2"/>
-              <line x1="2" y1="10" x2="22" y2="10"/>
-            </svg>
-          </div>
-          <div class="qa-lbl">Retrait GAB</div>
-        </div>
-        <div class="qa-item" onclick="goPage('pg-phishing')">
-          <div class="qa-ico">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-              stroke="#1a73e8" stroke-width="2.5" stroke-linecap="round">
-              <circle cx="11" cy="11" r="8"/>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-          </div>
-          <div class="qa-lbl">Anti-Phishing</div>
-        </div>
-        <div class="qa-item" onclick="goPage('pg-history')">
-          <div class="qa-ico">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-              stroke="#1a73e8" stroke-width="2.5" stroke-linecap="round">
-              <circle cx="12" cy="12" r="10"/>
-              <polyline points="12 6 12 12 16 14"/>
-            </svg>
-          </div>
-          <div class="qa-lbl">Historique</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Anti-phishing banner -->
-    <div class="phish-banner" onclick="goPage('pg-phishing')">
-      <div class="phish-ico">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-          stroke="#d97706" stroke-width="2.5" stroke-linecap="round">
-          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-          <line x1="12" y1="9" x2="12" y2="13"/>
-          <line x1="12" y1="17" x2="12.01" y2="17" stroke-width="3"/>
-        </svg>
-      </div>
-      <div>
-        <div class="phish-title">Vérifier un message suspect</div>
-        <div class="phish-sub">Protégez-vous contre les arnaques Wave</div>
-      </div>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-        stroke="#d97706" stroke-width="2.5" stroke-linecap="round">
-        <polyline points="9 18 15 12 9 6"/>
-      </svg>
-    </div>
-
-    <!-- Transactions -->
-    <div class="tx-sec">
-      <div class="tx-head">
-        <div class="tx-title">Dernières transactions</div>
-        <div class="tx-link" onclick="goPage('pg-history')">Voir tout</div>
-      </div>
-      <div id="tx-list">
-        <div style="text-align:center;padding:30px;color:var(--muted);font-size:13px">
-          Chargement...
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- TRANSFERT -->
-  <div id="pg-transfer" class="page">
-    <div class="page-head">
-      <div class="back-btn" onclick="goPage('pg-home')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-          stroke="white" stroke-width="2.5" stroke-linecap="round">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
-      </div>
-      <div class="page-title">Nouveau transfert</div>
-    </div>
-
-    <!-- Steps -->
-    <div class="steps">
-      <div class="step active" id="s1">
-        <div class="step-num">1</div>
-        <div class="step-lbl">Détails</div>
-      </div>
-      <div class="step-line" id="l1"></div>
-      <div class="step todo" id="s2">
-        <div class="step-num">2</div>
-        <div class="step-lbl">Confirmation</div>
-      </div>
-      <div class="step-line" id="l2"></div>
-      <div class="step todo" id="s3">
-        <div class="step-num">3</div>
-        <div class="step-lbl">Résultat</div>
-      </div>
-    </div>
-
-    <!-- Step 1 -->
-    <div id="step1" class="form-body">
-      <div class="fg">
-        <label>Destinataire</label>
-        <div class="inp-row">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="var(--muted)" stroke-width="2" stroke-linecap="round">
-            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.18 1.17 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.18 6.18l1.27-.52a2 2 0 012.11.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
-          </svg>
-          <input id="tPhone" type="tel" placeholder="+221 77 xxx xx xx"/>
-        </div>
-      </div>
-      <div class="fg">
-        <label>Montant (FCFA)</label>
-        <div class="inp-row">
-          <span class="inp-pfx">FCFA</span>
-          <input id="tAmt" type="number" placeholder="Saisir le montant"/>
-        </div>
-        <div class="amts">
-          <div class="amt-chip" onclick="setAmt(500)">500</div>
-          <div class="amt-chip" onclick="setAmt(1000)">1 000</div>
-          <div class="amt-chip" onclick="setAmt(5000)">5 000</div>
-          <div class="amt-chip" onclick="setAmt(10000)">10 000</div>
-          <div class="amt-chip" onclick="setAmt(25000)">25 000</div>
-        </div>
-      </div>
-      <div class="fg">
-        <label>Note (optionnel)</label>
-        <input class="inp" id="tNote" type="text" placeholder="Ex: Pour la famille"/>
-      </div>
-      <button class="btn btn-primary" onclick="goStep2()">Continuer</button>
-    </div>
-
-    <!-- Step 2 -->
-    <div id="step2" class="form-body" style="display:none">
-      <div class="ben-card">
-        <div class="ben-av" id="benAv">?</div>
-        <div>
-          <div class="ben-name" id="benName">Destinataire</div>
-          <div class="ben-phone" id="benPhone">—</div>
-        </div>
-        <div class="ben-edit" onclick="goStep1()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-            stroke="var(--wave)" stroke-width="2" stroke-linecap="round">
-            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-          </svg>
-        </div>
-      </div>
-      <div class="info-box">
-        <div class="info-row">
-          <span class="info-lbl">Vous envoyez</span>
-          <span class="info-val" id="confAmt">—</span>
-        </div>
-        <div class="info-row">
-          <span class="info-lbl">Frais Wave</span>
-          <span class="info-val blue" id="confFees">—</span>
-        </div>
-        <div class="info-divider"></div>
-        <div class="info-row">
-          <span class="info-lbl">Montant à débiter</span>
-          <span class="info-val" id="confTotal">—</span>
-        </div>
-      </div>
-      <div class="fg">
-        <label>Code PIN Wave</label>
-        <div class="pin-display">
-          <div class="pin-dot" id="pd1"></div>
-          <div class="pin-dot" id="pd2"></div>
-          <div class="pin-dot" id="pd3"></div>
-          <div class="pin-dot" id="pd4"></div>
-          <div class="pin-dot" id="pd5"></div>
-          <div class="pin-dot" id="pd6"></div>
-        </div>
-        <div class="pin-pad">
-          <div class="pin-key" onclick="pinKey('1')">1</div>
-          <div class="pin-key" onclick="pinKey('2')">2</div>
-          <div class="pin-key" onclick="pinKey('3')">3</div>
-          <div class="pin-key" onclick="pinKey('4')">4</div>
-          <div class="pin-key" onclick="pinKey('5')">5</div>
-          <div class="pin-key" onclick="pinKey('6')">6</div>
-          <div class="pin-key" onclick="pinKey('7')">7</div>
-          <div class="pin-key" onclick="pinKey('8')">8</div>
-          <div class="pin-key" onclick="pinKey('9')">9</div>
-          <div class="pin-key del" onclick="pinDel()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-              stroke="var(--text)" stroke-width="2" stroke-linecap="round">
-              <path d="M21 4H8l-7 8 7 8h13a2 2 0 002-2V6a2 2 0 00-2-2z"/>
-              <line x1="18" y1="9" x2="12" y2="15"/>
-              <line x1="12" y1="9" x2="18" y2="15"/>
-            </svg>
-          </div>
-          <div class="pin-key" onclick="pinKey('0')">0</div>
-          <div class="pin-key confirm" onclick="doTransfer()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-              stroke="white" stroke-width="2.5" stroke-linecap="round">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Step 3 — Success -->
-    <div id="step3" style="display:none">
-      <div class="success-body">
-        <div class="success-ico">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
-            stroke="white" stroke-width="3" stroke-linecap="round">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-        </div>
-        <div class="success-title">Transaction effectuée !</div>
-        <div class="success-sub">Votre transfert a été réalisé avec succès.</div>
-        <div class="success-ref">
-          <div class="success-ref-lbl">Référence de transaction</div>
-          <div class="success-ref-val" id="txRef">KP-WAVE-—</div>
-        </div>
-        <div class="success-details">
-          <div class="sd-row">
-            <span class="sd-lbl">Bénéficiaire</span>
-            <span class="sd-val" id="sucName">—</span>
-          </div>
-          <div class="sd-row">
-            <span class="sd-lbl">Montant envoyé</span>
-            <span class="sd-val" id="sucAmt">—</span>
-          </div>
-          <div class="sd-row">
-            <span class="sd-lbl">Frais</span>
-            <span class="sd-val" style="color:var(--wave)" id="sucFees">—</span>
-          </div>
-          <div class="sd-row">
-            <span class="sd-lbl">Date et heure</span>
-            <span class="sd-val" id="sucDate">—</span>
-          </div>
-          <div class="sd-row">
-            <span class="sd-lbl">Score fraude</span>
-            <span class="sd-val" id="sucScore">—</span>
-          </div>
-        </div>
-        <button class="btn btn-primary" style="margin-bottom:10px"
-          onclick="showToast('Reçu partagé !')">
-          Partager le reçu
-        </button>
-        <button class="btn btn-ghost" onclick="goPage('pg-home')">
-          Retour à l'accueil
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- HISTORIQUE -->
-  <div id="pg-history" class="page">
-    <div class="page-head">
-      <div class="back-btn" onclick="goPage('pg-home')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-          stroke="white" stroke-width="2.5" stroke-linecap="round">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
-      </div>
-      <div class="page-title">Historique</div>
-    </div>
-    <div style="padding:16px">
-      <div style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none">
-        <div class="amt-chip" style="white-space:nowrap">Tous</div>
-        <div class="amt-chip" style="white-space:nowrap;background:white;color:var(--muted)">Réussis</div>
-        <div class="amt-chip" style="white-space:nowrap;background:white;color:var(--muted)">En attente</div>
-        <div class="amt-chip" style="white-space:nowrap;background:white;color:var(--muted)">Échoués</div>
-      </div>
-      <div id="hist-list">
-        <div style="text-align:center;padding:40px;color:var(--muted)">Chargement...</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ANTI-PHISHING -->
-  <div id="pg-phishing" class="page">
-    <div class="page-head">
-      <div class="back-btn" onclick="goPage('pg-home')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-          stroke="white" stroke-width="2.5" stroke-linecap="round">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
-      </div>
-      <div class="page-title">Anti-Phishing Wave</div>
-    </div>
-    <div class="ph-form">
-      <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">
-        Vous avez reçu un SMS ou un lien suspect ? Vérifiez-le ici avant de cliquer.
-      </p>
-
-      <!-- Vérifier URL -->
-      <div class="fg">
-        <label>URL ou lien suspect</label>
-        <input class="inp" id="phUrl" type="text"
-          placeholder="Ex: wave-senegal-verify.com/login"/>
-      </div>
-      <button class="btn btn-primary" style="margin-bottom:20px" onclick="checkUrl()">
-        Analyser ce lien
-      </button>
-      <div id="url-result"></div>
-
-      <!-- Vérifier SMS -->
-      <div class="fg" style="margin-top:24px">
-        <label>Texte du SMS suspect</label>
-        <textarea class="inp" id="phSms" rows="4" style="resize:none"
-          placeholder="Collez ici le texte du SMS reçu..."></textarea>
-      </div>
-      <button class="btn btn-outline" onclick="checkSms()">
-        Analyser ce SMS
-      </button>
-      <div id="sms-result"></div>
-
-      <!-- Exemples menaces -->
-      <div style="margin-top:24px">
-        <div style="font-size:13px;font-weight:700;margin-bottom:12px">
-          Exemples de faux sites Wave connus
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <div style="background:#fef2f2;border-radius:10px;padding:10px 14px;
-            border-left:3px solid #ef4444">
-            <div style="font-size:12px;font-weight:700;color:#991b1b;margin-bottom:3px">
-              Dangereux
-            </div>
-            <code style="font-size:12px;color:#b91c1c">wave-senegal-verify.com</code>
-          </div>
-          <div style="background:#fef2f2;border-radius:10px;padding:10px 14px;
-            border-left:3px solid #ef4444">
-            <div style="font-size:12px;font-weight:700;color:#991b1b;margin-bottom:3px">
-              Dangereux
-            </div>
-            <code style="font-size:12px;color:#b91c1c">waave.sn / wave-money.net</code>
-          </div>
-          <div style="background:#ecfdf5;border-radius:10px;padding:10px 14px;
-            border-left:3px solid #10b981">
-            <div style="font-size:12px;font-weight:700;color:#065f46;margin-bottom:3px">
-              Officiels
-            </div>
-            <code style="font-size:12px;color:#065f46">wave.com · wave.sn</code>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div><!-- /app -->
-
-<!-- Bottom nav -->
-<nav class="bnav" id="bnav" style="display:none">
-  <div class="n-item on" onclick="goPage('pg-home',this)">
-    <svg class="n-ico" width="22" height="22" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round">
-      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-      <polyline points="9 22 9 12 15 12 15 22"/>
-    </svg>
-    <span class="n-lbl">Accueil</span>
-  </div>
-  <div class="n-item" onclick="goPage('pg-transfer',this)">
-    <svg class="n-ico" width="22" height="22" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round">
-      <line x1="7" y1="17" x2="17" y2="7"/>
-      <polyline points="7 7 17 7 17 17"/>
-    </svg>
-    <span class="n-lbl">Envoyer</span>
-  </div>
-  <div class="n-item" onclick="goPage('pg-history',this)">
-    <svg class="n-ico" width="22" height="22" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round">
-      <circle cx="12" cy="12" r="10"/>
-      <polyline points="12 6 12 12 16 14"/>
-    </svg>
-    <span class="n-lbl">Historique</span>
-  </div>
-  <div class="n-item" onclick="goPage('pg-phishing',this)">
-    <svg class="n-ico" width="22" height="22" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round">
-      <circle cx="11" cy="11" r="8"/>
-      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-    </svg>
-    <span class="n-lbl">Sécurité</span>
-  </div>
-</nav>
-
 <script>
 const API = 'https://m7z0x2cqh0.execute-api.eu-west-3.amazonaws.com/prod/api/v1';
 const OPERATOR = 'wave';
@@ -900,65 +7,57 @@ let pin = '';
 function fmt(n){return new Intl.NumberFormat('fr-FR').format(Math.round(n));}
 function ini(n){return n?n.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase():'?';}
 function gdi(){
-  let id = localStorage.getItem('wave_dev');
+  let id=localStorage.getItem('wave_dev');
   if(!id){id=crypto.randomUUID();localStorage.setItem('wave_dev',id);}
   return id;
 }
-function genRef(){
-  return 'KP-WAVE-'+Date.now().toString(36).toUpperCase();
-}
+function genRef(){return 'KP-WAVE-'+Date.now().toString(36).toUpperCase();}
 
-// ── LOGIN ──────────────────────────────
 async function doLogin(){
-  const phone = '+221' + document.getElementById('lPhone').value.trim().replace(/\s/g,'');
-  const p = document.getElementById('lPin').value.trim();
+  const phoneInput=document.getElementById('lPhone').value.trim().replace(/\s/g,'');
+  const phone=phoneInput.startsWith('+')?phoneInput:'+221'+phoneInput;
+  const p=document.getElementById('lPin').value.trim();
   if(!phone||!p){showToast('Remplissez tous les champs');return;}
   try{
-    const res = await fetch(`${API}/accounts/login`,{
+    const res=await fetch(`${API}/accounts/login`,{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({phone, pin:p, device_id:gdi(),
-        device_name:navigator.userAgent.substring(0,50), ip_address:'127.0.0.1'})
+      body:JSON.stringify({phone,pin:p,device_id:gdi(),
+        device_name:navigator.userAgent.substring(0,50),ip_address:'127.0.0.1'})
     }).then(r=>r.json());
     if(res.success){
-      account = res.account;
-      // Récupérer solde wallet Wave
-      const stats = await fetch(`${API}/stats/accounts`).then(r=>r.json()).catch(()=>null);
-      if(stats){
-        const acc = stats.accounts.find(a=>a.phone===phone);
-        if(acc) account.balance = acc.balance;
-      }
+      account=res.account;
+      account.balance=200000;
+      localStorage.setItem('wave_account',JSON.stringify(account));
       startApp();
-    } else {
+    }else{
       showToast(res.message||'Identifiants incorrects');
     }
-  } catch(e){
-    // Mode démo
-    account = {id:'DEMO',name:'Fatou Gueye',phone,balance:252800,operator:'wave'};
+  }catch(e){
+    account={id:'DEMO',name:'Fatou Gueye',phone,balance:200000,operator:'wave'};
+    localStorage.setItem('wave_account',JSON.stringify(account));
     startApp();
   }
 }
 
 function startApp(){
-  document.getElementById('loginPage').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-  document.getElementById('bnav').style.display = 'flex';
-  document.getElementById('hName').textContent = account.name;
-  document.getElementById('hPhone').textContent = account.phone;
-  document.getElementById('bAmt').textContent = fmt(account.balance||0);
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('bnav').style.display='flex';
+  document.getElementById('hName').textContent=account.name;
+  document.getElementById('hPhone').textContent=account.phone;
+  document.getElementById('bAmt').textContent=fmt(account.balance||0);
   loadTransactions();
 }
 
-// ── NAVIGATION ─────────────────────────
-function goPage(id, el){
+function goPage(id,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.querySelectorAll('.n-item').forEach(n=>n.classList.remove('on'));
-  if(el) el.classList.add('on');
-  if(id==='pg-history') loadHistory();
+  if(el)el.classList.add('on');
+  if(id==='pg-history')loadHistory();
   window.scrollTo(0,0);
 }
 
-// ── TRANSFER STEPS ─────────────────────
 function goStep1(){
   document.getElementById('step1').style.display='block';
   document.getElementById('step2').style.display='none';
@@ -971,99 +70,70 @@ function goStep1(){
 }
 
 function goStep2(){
-  const phone = document.getElementById('tPhone').value.trim();
-  const amt = parseFloat(document.getElementById('tAmt').value);
-  if(!phone){showToast('Entrez un numéro de téléphone');return;}
+  const phone=document.getElementById('tPhone').value.trim();
+  const amt=parseFloat(document.getElementById('tAmt').value);
+  if(!phone){showToast('Entrez un numéro');return;}
   if(!amt||amt<=0){showToast('Entrez un montant valide');return;}
   if(amt>account.balance){showToast('Solde insuffisant');return;}
-
-  const fees = Math.max(50, Math.round(amt*0.02));
-  document.getElementById('benAv').textContent = ini(phone);
-  document.getElementById('benName').textContent = 'Destinataire Wave';
-  document.getElementById('benPhone').textContent = phone;
-  document.getElementById('confAmt').textContent = fmt(amt)+' FCFA';
-  document.getElementById('confFees').textContent = fmt(fees)+' FCFA';
-  document.getElementById('confTotal').textContent = fmt(amt+fees)+' FCFA';
-
+  const fees=Math.max(50,Math.round(amt*0.02));
+  document.getElementById('benAv').textContent=ini(phone);
+  document.getElementById('benName').textContent='Destinataire Wave';
+  document.getElementById('benPhone').textContent=phone;
+  document.getElementById('confAmt').textContent=fmt(amt)+' FCFA';
+  document.getElementById('confFees').textContent=fmt(fees)+' FCFA';
+  document.getElementById('confTotal').textContent=fmt(amt+fees)+' FCFA';
   document.getElementById('step1').style.display='none';
   document.getElementById('step2').style.display='block';
-  document.getElementById('step3').style.display='none';
   document.getElementById('s1').className='step done';
   document.getElementById('s2').className='step active';
   document.getElementById('l1').className='step-line done';
-  pin = '';
-  updatePinDots();
+  pin='';updatePinDots();
 }
 
-// PIN
-function pinKey(k){
-  if(pin.length>=6) return;
-  pin += k;
-  updatePinDots();
-}
+function pinKey(k){if(pin.length>=6)return;pin+=k;updatePinDots();}
 function pinDel(){pin=pin.slice(0,-1);updatePinDots();}
 function updatePinDots(){
   for(let i=1;i<=6;i++){
-    document.getElementById('pd'+i).className = 'pin-dot'+(i<=pin.length?' filled':'');
+    document.getElementById('pd'+i).className='pin-dot'+(i<=pin.length?' filled':'');
   }
 }
 
 async function doTransfer(){
   if(pin.length<4){showToast('Entrez votre PIN complet');return;}
-  const phone = document.getElementById('tPhone').value.trim();
-  const amt = parseFloat(document.getElementById('tAmt').value);
-  const fees = Math.max(50, Math.round(amt*0.02));
-  const ref = genRef();
-
+  const phone=document.getElementById('tPhone').value.trim();
+  const amt=parseFloat(document.getElementById('tAmt').value);
+  const fees=Math.max(50,Math.round(amt*0.02));
+  const ref=genRef();
   try{
-    // Envoyer le webhook à Karangué Pay
-    const res = await fetch(`${API}/webhook/${OPERATOR}`,{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        transaction_id: ref,
-        amount: amt,
-        sender: account.phone,
-        receiver: phone,
-        operator: OPERATOR,
-        timestamp: Math.floor(Date.now()/1000),
-        nonce: crypto.randomUUID(),
-        pin: pin
-      })
+    const res=await fetch(`${API}/webhook/${OPERATOR}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({transaction_id:ref,amount:amt,
+        sender:account.phone,receiver:phone,operator:OPERATOR,
+        timestamp:Math.floor(Date.now()/1000),nonce:crypto.randomUUID(),pin})
     }).then(r=>r.json());
-
-    // Afficher résultat
-    const now = new Date().toLocaleString('fr-FR',{
-      day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'
-    });
-
-    document.getElementById('txRef').textContent = ref;
-    document.getElementById('sucName').textContent = phone;
-    document.getElementById('sucAmt').textContent = fmt(amt)+' FCFA';
-    document.getElementById('sucFees').textContent = fmt(fees)+' FCFA';
-    document.getElementById('sucDate').textContent = now;
-    document.getElementById('sucScore').textContent =
-      (res.risk_score||0)+'/100 — '+(res.decision||'AUTORISÉ');
-
-    // Mettre à jour solde
-    account.balance = Math.max(0, account.balance - amt - fees);
-    document.getElementById('bAmt').textContent = fmt(account.balance);
-
+    document.getElementById('txRef').textContent=ref;
+    document.getElementById('sucName').textContent=phone;
+    document.getElementById('sucAmt').textContent=fmt(amt)+' FCFA';
+    document.getElementById('sucFees').textContent=fmt(fees)+' FCFA';
+    document.getElementById('sucDate').textContent=new Date().toLocaleString('fr-FR');
+    document.getElementById('sucScore').textContent=(res.risk_score||0)+'/100 — '+(res.decision||'AUTORISÉ');
+    account.balance=Math.max(0,account.balance-amt-fees);
+    document.getElementById('bAmt').textContent=fmt(account.balance);
     document.getElementById('step2').style.display='none';
     document.getElementById('step3').style.display='block';
     document.getElementById('s2').className='step done';
     document.getElementById('s3').className='step active';
     document.getElementById('l2').className='step-line done';
-
-  } catch(e){
-    showToast('Erreur réseau — mode démo');
-    document.getElementById('txRef').textContent = ref;
-    document.getElementById('sucName').textContent = phone;
-    document.getElementById('sucAmt').textContent = fmt(amt)+' FCFA';
-    document.getElementById('sucFees').textContent = fmt(fees)+' FCFA';
-    document.getElementById('sucDate').textContent = new Date().toLocaleString('fr-FR');
-    document.getElementById('sucScore').textContent = '12/100 — AUTORISÉ';
-    account.balance = Math.max(0, account.balance - amt - fees);
-    document.getElementById('bAmt').textContent = fmt(account.balance);
+  }catch(e){
+    showToast('Mode démo activé');
+    document.getElementById('txRef').textContent=ref;
+    document.getElementById('sucName').textContent=phone;
+    document.getElementById('sucAmt').textContent=fmt(amt)+' FCFA';
+    document.getElementById('sucFees').textContent=fmt(fees)+' FCFA';
+    document.getElementById('sucDate').textContent=new Date().toLocaleString('fr-FR');
+    document.getElementById('sucScore').textContent='12/100 — AUTORISÉ';
+    account.balance=Math.max(0,account.balance-amt-fees);
+    document.getElementById('bAmt').textContent=fmt(account.balance);
     document.getElementById('step2').style.display='none';
     document.getElementById('step3').style.display='block';
   }
@@ -1071,44 +141,41 @@ async function doTransfer(){
 
 function setAmt(v){document.getElementById('tAmt').value=v;}
 
-// ── TRANSACTIONS ───────────────────────
 async function loadTransactions(){
   try{
-    const res = await fetch(`${API}/transactions/account/${account.id}`).then(r=>r.json());
-    const txs = (res.transactions||[]).filter(t=>t.operator===OPERATOR).slice(0,5);
-    renderTxList('tx-list', txs);
-  } catch(e){
-    document.getElementById('tx-list').innerHTML =
-      '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Aucune transaction</div>';
+    const res=await fetch(`${API}/transactions/account/${account.id}`).then(r=>r.json());
+    const txs=(res.transactions||[]).filter(t=>t.operator===OPERATOR).slice(0,5);
+    renderTxList('tx-list',txs);
+  }catch(e){
+    document.getElementById('tx-list').innerHTML=
+      '<div style="text-align:center;padding:20px;color:var(--muted)">Aucune transaction</div>';
   }
 }
 
 async function loadHistory(){
   try{
-    const res = await fetch(`${API}/transactions?limit=50`).then(r=>r.json());
-    const txs = (res.transactions||[]).filter(t=>
-      t.sender_phone===account.phone||t.receiver_phone===account.phone
-    );
-    renderTxList('hist-list', txs);
-  } catch(e){
-    document.getElementById('hist-list').innerHTML =
+    const res=await fetch(`${API}/transactions?limit=50`).then(r=>r.json());
+    const txs=(res.transactions||[]).filter(t=>
+      t.sender_phone===account.phone||t.receiver_phone===account.phone);
+    renderTxList('hist-list',txs);
+  }catch(e){
+    document.getElementById('hist-list').innerHTML=
       '<div style="text-align:center;padding:40px;color:var(--muted)">Aucune transaction</div>';
   }
 }
 
-function renderTxList(id, txs){
-  const el = document.getElementById(id);
+function renderTxList(id,txs){
+  const el=document.getElementById(id);
   if(!txs.length){
-    el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:13px">Aucune transaction</div>';
+    el.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted)">Aucune transaction</div>';
     return;
   }
-  el.innerHTML = txs.map(tx=>{
-    const isPos = tx.receiver_phone===account.phone;
-    const col = tx.status==='blocked'?'ico-r':isPos?'ico-g':'ico-o';
-    const sign = isPos?'+':'-';
-    const scol = isPos?'pos':'neg';
+  el.innerHTML=txs.map(tx=>{
+    const isPos=tx.receiver_phone===account.phone;
+    const sign=isPos?'+':'-';
+    const scol=isPos?'pos':'neg';
     return`<div class="tx-item">
-      <div class="tx-ico ${col}">
+      <div class="tx-ico ${isPos?'ico-g':'ico-r'}">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
           stroke="${isPos?'#10b981':'#ef4444'}" stroke-width="2.5" stroke-linecap="round">
           <line x1="12" y1="${isPos?19:5}" x2="12" y2="${isPos?5:19}"/>
@@ -1121,81 +188,66 @@ function renderTxList(id, txs){
       </div>
       <div>
         <div class="tx-amt ${scol}">${sign}${fmt(tx.amount)} FCFA</div>
-        <div class="tx-time">${tx.status==='blocked'?'Bloqué':tx.status==='completed'?'Réussi':'En attente'}</div>
+        <div class="tx-time">${tx.status==='blocked'?'Bloqué':'Réussi'}</div>
       </div>
     </div>`;
   }).join('');
 }
 
-// ── ANTI-PHISHING ──────────────────────
 async function checkUrl(){
-  const url = document.getElementById('phUrl').value.trim();
+  const url=document.getElementById('phUrl').value.trim();
   if(!url){showToast('Entrez une URL');return;}
-  const el = document.getElementById('url-result');
-  el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--muted)">Analyse en cours...</div>';
+  const el=document.getElementById('url-result');
+  el.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted)">Analyse...</div>';
   try{
-    const res = await fetch(`${API}/security/check-url`,{
+    const res=await fetch(`${API}/security/check-url`,{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({url, operator:'wave'})
+      body:JSON.stringify({url,operator:'wave'})
     }).then(r=>r.json());
-    const isDanger = res.is_phishing;
-    el.innerHTML = `<div class="ph-result ${isDanger?'ph-danger':'ph-safe'}">
-      <div class="ph-title">${isDanger?'⚠ PHISHING DÉTECTÉ':'✓ Lien sécurisé'} — Score ${res.risk_score}/100</div>
+    const d=res.is_phishing;
+    el.innerHTML=`<div class="ph-result ${d?'ph-danger':'ph-safe'}">
+      <div class="ph-title">${d?'PHISHING DÉTECTÉ':'Lien sécurisé'} — Score ${res.risk_score}/100</div>
       ${(res.signals||[]).map(s=>`<div class="ph-signal">${s}</div>`).join('')}
     </div>`;
-  } catch(e){
-    const isDanger = url.includes('verify')||url.includes('secure')||
-      (!url.includes('wave.com')&&!url.includes('wave.sn'));
-    el.innerHTML = `<div class="ph-result ${isDanger?'ph-danger':'ph-safe'}">
-      <div class="ph-title">${isDanger?'⚠ SUSPECT — À éviter':'✓ Semble légitime'}</div>
-      <div class="ph-signal">${isDanger?'Domaine non officiel Wave':'Domaine officiel Wave détecté'}</div>
+  }catch(e){
+    const d=!url.includes('wave.com')&&!url.includes('wave.sn');
+    el.innerHTML=`<div class="ph-result ${d?'ph-danger':'ph-safe'}">
+      <div class="ph-title">${d?'SUSPECT':'Semble légitime'}</div>
     </div>`;
   }
 }
 
 async function checkSms(){
-  const sms = document.getElementById('phSms').value.trim();
+  const sms=document.getElementById('phSms').value.trim();
   if(!sms){showToast('Entrez le texte du SMS');return;}
-  const el = document.getElementById('sms-result');
-  el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--muted)">Analyse en cours...</div>';
+  const el=document.getElementById('sms-result');
   try{
-    const res = await fetch(`${API}/security/check-sms`,{
+    const res=await fetch(`${API}/security/check-sms`,{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({message:sms, operator:'wave'})
+      body:JSON.stringify({message:sms,operator:'wave'})
     }).then(r=>r.json());
-    const isDanger = res.is_phishing||res.risk_score>50;
-    el.innerHTML = `<div class="ph-result ${isDanger?'ph-danger':'ph-safe'}" style="margin-top:12px">
-      <div class="ph-title">${isDanger?'⚠ SMS SUSPECT':'✓ SMS semble légitime'} — Score ${res.risk_score}/100</div>
+    const d=res.is_phishing||res.risk_score>50;
+    el.innerHTML=`<div class="ph-result ${d?'ph-danger':'ph-safe'}" style="margin-top:12px">
+      <div class="ph-title">${d?'SMS SUSPECT':'SMS légitime'} — Score ${res.risk_score}/100</div>
       ${(res.signals||[]).map(s=>`<div class="ph-signal">${s}</div>`).join('')}
     </div>`;
-  } catch(e){
-    const keywords = ['code','pin','urgent','compte bloqué','cliquez','gagnez'];
-    const isDanger = keywords.some(k=>sms.toLowerCase().includes(k));
-    el.innerHTML = `<div class="ph-result ${isDanger?'ph-danger':'ph-safe'}" style="margin-top:12px">
-      <div class="ph-title">${isDanger?'⚠ SMS SUSPECT':'✓ SMS semble légitime'}</div>
-      <div class="ph-signal">${isDanger?'Contient des mots-clés d\'hameçonnage':'Aucun indicateur suspect détecté'}</div>
+  }catch(e){
+    const d=['code','pin','urgent','bloqué','cliquez'].some(k=>sms.toLowerCase().includes(k));
+    el.innerHTML=`<div class="ph-result ${d?'ph-danger':'ph-safe'}" style="margin-top:12px">
+      <div class="ph-title">${d?'SMS SUSPECT':'SMS légitime'}</div>
     </div>`;
   }
 }
 
-// ── TOAST ──────────────────────────────
-let tTimer = null;
+let tTimer=null;
 function showToast(msg){
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(tTimer);
-  tTimer = setTimeout(()=>el.classList.remove('show'),3000);
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(tTimer);tTimer=setTimeout(()=>el.classList.remove('show'),3000);
 }
 
-// Init
-window.onload = () => {
-  const saved = localStorage.getItem('wave_account');
-  if(saved){
-    account = JSON.parse(saved);
-    startApp();
-  }
+window.onload=()=>{
+  const saved=localStorage.getItem('wave_account');
+  if(saved){account=JSON.parse(saved);startApp();}
 };
 </script>
-</body>
-</html>
